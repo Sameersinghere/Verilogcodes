@@ -1,0 +1,147 @@
+module apb (pclk,prst,paddr,pwdata,prdata,pwrite,psel,penable,pready, tx_ref, tx_vld,rd_data, rd_datavld, addr_in, data_in);
+parameter S_IDLE = 3'b000;
+parameter S_SETUP = 3'b001;
+parameter S_ACCESS = 3'b010;
+input pclk;
+input prst;
+output reg [31:0] paddr;
+output reg [31:0] pwdata;
+input [31:0] prdata;
+output reg pwrite;
+output reg psel;
+output reg penable;
+input pready;
+input [1:0] tx_ref;
+input tx_vld;
+output reg [31:0] rd_data;
+output reg rd_datavld;
+input [31:0] addr_in;
+input [31:0] data_in;
+reg [2:0] cs, ns;
+
+
+ assign vld_txfer = (tx_vld && (tx_ref == 2'b00 || tx_ref == 2'b01));
+ 
+always @(*)
+	case(cs)
+	S_IDLE:
+	begin
+		if (vld_txfer )
+			 ns = S_SETUP;
+	        else 
+			 ns = S_IDLE;
+	end
+	S_SETUP:
+	begin
+		ns = S_ACCESS;
+	end
+	
+
+        S_ACCESS: begin
+        
+        // ns = (pready && vld_txfer) ? (vld_txfer ? S_SETUP : S_IDLE) : (pready ? S_IDLE : S_ACCESS);
+        if (vld_txfer && pready) begin
+          ns = S_SETUP;
+        end else if (!vld_txfer && pready) begin
+          ns = S_IDLE;
+        end 
+        else begin
+          ns = S_ACCESS;
+        end
+        end
+        endcase
+
+/*always @(posedge pclk)
+begin
+	if (prst)
+	begin
+		store_addr <= 32'b0;
+		store_ref <= 2'b00;
+		store_data <= 32'b0;
+	end
+       else if (((cs == S_ACCESS) && pready) || ((cs == S_IDLE) && (tx_vld && (tx_ref == 2'b00 || 2'b01))))
+
+       begin
+	      	       	       // if ( at those sampling points) 
+       store_ref <= tx_ref;
+       store_addr <= addr_in;
+       store_data <= data_in;
+       end
+end*/	
+always @(posedge pclk)
+begin
+	if (prst)
+	begin
+		cs <= S_IDLE;
+	end
+	else
+	begin
+		cs <= ns;
+	end
+end
+
+always @(posedge pclk )
+              
+begin
+    if (prst)
+    begin
+        // ns <= S_IDLE;
+        psel <= 1'b0;
+        penable <= 1'b0;
+        paddr <= 32'b0;
+        pwrite <= 1'b0;
+        pwdata <= 32'b0;
+        rd_datavld <= 1'b0;
+        rd_data <= 32'b0;
+    end
+    else
+    begin
+        case (ns)
+            S_IDLE:
+			begin
+				// ns <= S_SETUP;
+				psel <= 1'b0;
+				penable <= 1'b0;
+				paddr <= 32'b0  ;
+				pwrite <= 1'b0  ;
+				pwdata <= 32'b0;
+				//rd_datavld <= (pready) ? vld_txfer : 1'b0;
+                   // rd_data <= (pready) ? prdata : 32'b0;
+
+			end     
+            S_SETUP:
+                begin
+                   // ns <= S_ACCESS;
+                    psel <= 1'b1;
+                    penable <= 1'b0;
+		    paddr <= addr_in ; 
+                    pwrite <= (((tx_vld == 1'b1) && (tx_ref == 2'b01)) ? 1'b1 : 1'b0);
+		    pwdata <=  data_in ;
+
+	    end
+            S_ACCESS:
+                begin
+                   //  ns <= S_IDLE;
+                    psel <= 1'b1;
+		    penable <= 1'b1;
+                    paddr <= paddr ;
+                    pwrite <= pwrite;
+                    pwdata <=  pwdata ;
+		    rd_datavld <= prdata;
+                    rd_data <= pready;              
+	    end
+            default:
+                begin
+                   // ns <= S_IDLE;
+                    psel <= 1'b0;
+                    penable <= 1'b0;
+                    paddr <= 32'b0;
+                    pwrite <= 1'b0;
+                    pwdata <= 32'b0;
+                    rd_datavld <= 1'b0;
+                    rd_data <= 32'b0;
+                end
+        endcase
+    end
+end
+endmodule
