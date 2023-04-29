@@ -1,0 +1,145 @@
+module router_top (// use data_out and data_sel for the direcrions
+    input pclk, prst,
+    input [7:0] paddr,
+    input pready,
+    input [31:0] pwdata,
+    input pwrite,
+    input psel, penable,
+    output [31:0] prdata,
+    output reg [31:0] n_data_out, s_data_out, e_data_out, w_data_out,
+    output reg  n_vld_out, s_vld_out, e_vld_out, w_vld_out,
+    input  [31:0] n_data_in, s_data_in, e_data_in, w_data_in,
+    input n_vld_in, s_vld_in, e_vld_in, w_vld_in
+);
+
+wire [3:0] data_sel;
+wire [31:0] data_out;
+
+router_csr router_inst (
+    .pclk(pclk),
+    .prst(prst),
+    .psel(psel),
+    .penable(penable),
+    .paddr(paddr),
+    .pready(pready),
+    .pwdata(pwdata),
+    .prdata(prdata),
+    .pwrite(pwrite),
+    .data_out(data_out),
+    .data_sel(data_sel)
+);
+always @(posedge pclk)
+begin
+	
+		
+	if(data_sel == 4'b0001) // n 
+	begin
+		n_data_out <= data_out;
+		n_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b0010) // s
+	begin
+		s_data_out <= data_out;
+		s_vld_out <= 1'b1;
+	end
+        else if (data_sel == 4'b0100) //e
+	begin
+	        e_data_out <= data_out;
+	        e_vld_out <= 1'b1;
+	end
+        else if ( data_sel == 4'b1000)	// w
+	begin
+		w_data_out <= data_out;
+		w_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b0011) // ns, sn
+	begin
+		n_data_out <= data_out;
+		s_data_out <= data_out;
+		n_vld_out <= 1'b1;
+		s_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b0101) // ne, en
+	begin
+		n_data_out <= data_out;
+		e_data_out <= data_out;
+		n_vld_out <= 1'b1;
+		e_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b0110) // se, es
+	begin
+		s_data_out <= data_out;
+		e_data_out <= data_out;
+		s_vld_out <= 1'b1;
+		e_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b1001) //nw, wn
+	begin
+		n_data_out <= data_out;
+		w_data_out <= data_out;
+		n_vld_out <= 1'b1;
+		w_vld_out <= 1'b1;
+	end
+	else if (data_sel == 4'b1010) // sw, ws
+	begin
+		s_data_out <= data_out;
+		w_data_out <= data_out;
+		s_vld_out <= 1'b1;
+		w_vld_out <= 1'b1;
+	end
+	else if(data_sel == 4'b0111) // nse
+	begin
+	        n_data_out <= data_out;
+	        s_data_out <= data_out;
+	        e_data_out <= data_out;
+	        n_vld_out <= 1'b1;
+	        s_vld_out <= 1'b1;
+	        e_vld_out <= 1'b1;
+	end
+        else if(data_sel == 4'b1110)// wes
+	begin
+	       w_data_out <= data_out;
+               s_data_out <= data_out;
+               e_data_out <= data_out;
+               w_vld_out <= 1'b1;
+               s_vld_out <= 1'b1;
+               e_vld_out <= 1'b1;
+        end
+        else if(data_sel == 4'b1011)  // nsw
+	begin
+	       n_data_out <= data_out;
+               s_data_out <= data_out;
+               e_data_out <= data_out;
+               n_vld_out <= 1'b1;
+               s_vld_out <= 1'b1;
+               e_vld_out <= 1'b1;
+        end
+        else if( data_sel == 4'b1101) // new
+	begin
+	       n_data_out <= data_out;
+               e_data_out <= data_out;
+               w_data_out <= data_out;
+	       n_vld_out <= 1'b1;
+	       e_vld_out <= 1'b1;
+	       w_vld_out <= 1'b1;
+       end
+       else if(data_sel == 4'b1111) // nsew
+       begin
+	      n_data_out <= data_out;
+              s_data_out <= data_out;
+              e_data_out <= data_out;
+              w_data_out <= data_out;
+              n_vld_out <= 1'b1;
+              s_vld_out <= 1'b1;
+              e_vld_out <= 1'b1;
+              w_vld_out <= 1'b1;
+       end
+       else begin
+	       n_vld_out <= 1'b0;
+	       s_vld_out <= 1'b0;
+	       e_vld_out <= 1'b0;
+	       w_vld_out <= 1'b0;
+       end
+       end
+   
+       endmodule
