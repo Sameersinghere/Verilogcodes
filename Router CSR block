@@ -1,0 +1,124 @@
+module router_csr (
+    input pclk, prst,
+    input psel, penable,
+    input [7:0] paddr,
+    input pready,
+    input [31:0] pwdata,
+    input pwrite,
+    output reg [31:0] data_out,
+    output reg [3:0] data_sel,
+    output reg [31:0] prdata
+);
+integer i;
+
+reg [31:0] reg_file [15:0]; 
+always @(posedge pclk) begin
+    if (prst) begin
+        
+        for (i = 0; i < 16; i = i + 1) begin
+            reg_file[i] <= 0;
+        end
+    end else if ((psel && penable) && pwrite && (paddr[7:4] == 4'b0000))
+    begin
+         case (paddr[3:0])
+
+		 4'h0: reg_file[0] <= pwdata;
+		 4'h1: reg_file[1] <= pwdata;
+		 4'h2: reg_file[2] <= pwdata;
+		 4'h3: reg_file[3] <= pwdata;
+		 4'h4: reg_file[4] <= pwdata;
+		 4'h5: reg_file[5] <= pwdata;
+		 4'h6: reg_file[6] <= pwdata;
+		 4'h7: reg_file[7] <= pwdata;
+		 4'h8: reg_file[8] <= pwdata;
+		 4'h9: reg_file[9] <= pwdata;
+		 4'ha: reg_file[10] <= pwdata;
+		 4'hb: reg_file[11] <= pwdata;
+		 4'hc: reg_file[12] <= pwdata;
+		 4'hd: reg_file[13] <= pwdata;
+		 4'he: reg_file[14] <= pwdata;
+		 4'hf: reg_file[15] <= pwdata;
+		 default:;
+	 endcase 
+
+    end
+end
+//always @(posedge clk) begin
+  //  if (pwrite) begin
+    //    reg_file[addr] <= data_in; // Write data_in to the register at address addr
+    //end
+//end
+/*if (pwrite) begin
+    if (paddr[7:4] == 4'b0000) begin
+        data_sel <= paddr[3:0];
+    end else begin
+        data_sel <= 4'bxxxx;
+    end
+if (!pwrite) begin
+    if (paddr[7:4] == 4'b0000) begin
+        data_sel <= paddr[3:0];
+    end else begin
+        data_sel <= 4'b0000;
+    end
+end
+end*/
+
+always@*
+begin
+prdata = 32'd0;
+if(!pwrite && (paddr[7:4] == 4'b0000))
+begin	
+	if(psel && penable)
+	begin
+	case(paddr[3:0])
+ // (!pwrite && (paddr[7:4] == 4'b0000))
+        4'h0: prdata = reg_file[0];
+        4'h1: prdata = reg_file[1];
+	4'h2: prdata = reg_file[2];
+        4'h3: prdata = reg_file[3];
+	4'h4: prdata = reg_file[4];
+        4'h5: prdata = reg_file[5];
+        4'h6: prdata = reg_file[6];
+        4'h7: prdata = reg_file[7];
+        4'h8: prdata = reg_file[8];
+        4'h9: prdata = reg_file[9];
+        4'ha: prdata = reg_file[10];
+        4'hb: prdata = reg_file[11];
+        4'hc: prdata = reg_file[12];
+        4'hd: prdata = reg_file[13];
+        4'he: prdata = reg_file[14];
+        4'hf: prdata = reg_file[15];
+	default:prdata=32'd0;
+	endcase
+	end
+end
+        else if((paddr[7:4] != 4'b0000) & psel && penable)
+        begin
+            prdata = 32'h0000;
+            
+        end
+	    
+end
+
+always @(posedge pclk)
+begin
+    if (psel && penable)
+    begin
+        if (pwrite) 
+	begin
+            if (paddr[7:4] != 4'b0000) // || (paddr[7:4] != 4'b0000 && paddr[3:0] == 16'h0000))
+	    begin
+               
+    			data_sel <= paddr[7:4];
+		        data_out <= pwdata;	
+                    
+		end
+		else 
+		begin
+			data_sel <= 8'b00000000;
+			data_out <= 32'h0000; 
+		end
+	end
+end
+end
+endmodule
