@@ -1,0 +1,107 @@
+module apb_tb;
+
+reg pclk;
+reg prst;
+wire [31:0] paddr;
+wire [31:0] pwdata;
+reg [31:0] prdata;
+wire pwrite;
+wire psel;
+wire penable;
+reg pready;
+reg [1:0] tx_ref;
+wire [31:0] rd_data;
+wire rd_datavld;
+reg [31:0] addr_in;
+reg [31:0] data_in;
+reg tx_vld;
+
+apb apb_inst(.pclk(pclk),.prst(prst),.paddr(paddr),.pwdata(pwdata),.prdata(prdata),.pwrite(pwrite),.psel(psel),.penable(penable),.pready(pready),.tx_ref(tx_ref),.tx_vld(tx_vld),.rd_data(rd_data),.rd_datavld(rd_datavld),.addr_in(addr_in),.data_in(data_in));
+always #5 pclk = ~pclk;
+initial
+begin
+	pclk = 1;
+end
+initial
+begin
+	$monitor("prst = %b, tx_vld = %b, data_in = %b, tx_ref = %b, pready = %b, addr_in = %b, prdata = %b, pwdata = %b, psel = %b, penable = %b, rd_data = %b, pwrite = %b, rd_datavld = %b",prst, tx_vld, data_in, tx_ref, pready, addr_in, prdata, pwdata, psel, penable, rd_data, pwrite, rd_datavld);
+end
+initial
+begin
+	prst = 1'b1; #10 prst = 1'b0;
+
+	#10 tx_vld = #0 1'b0;
+	data_in = #0 $random;
+	tx_ref = #0 2'b01;
+	pready = #0 1'b0;
+	addr_in = #0 32'b0;
+	prdata = #0 8'b0;
+	
+	
+
+	
+      #10  tx_vld = #0 1'b1;
+	data_in = #0 $random;
+	tx_ref = #0 2'b01;
+	pready = #0 $random;
+	addr_in = #0 32'b1;
+	prdata = #0 $random;
+
+
+       
+        #10 tx_vld = #0 $random;
+	data_in = #0 $random;
+	tx_ref = #0 $random;
+	pready = #0 $random;
+	addr_in = #0 $random;
+	prdata = #0 $random;
+
+
+        #10 tx_vld = #0 $random;
+	data_in = #0 $random;
+	tx_ref = #0 $random;
+	pready = #0 $random;
+	addr_in = #0 $random;
+	prdata = #0 $random;
+
+        #10 tx_vld = #0 $random;
+	data_in = #0 $random;
+	tx_ref = #0 $random;
+	pready = #0 $random;
+	addr_in = #0 $random;
+	prdata = #0 $random;
+
+
+        #10 tx_vld = #0 $random;
+	data_in = #0 $random;
+	tx_ref = #0 $random;
+	pready = #0 $random;
+	addr_in = #0 $random;
+	prdata = #0 $random;
+
+	
+	#10 tx_vld = #0 1'b0;
+	data_in = #0 $random;
+	tx_ref = #0 2'b00;
+	pready = #0 1'b1;
+	addr_in = #0 $random;
+	prdata = #0 8'b00001111;
+
+	#30 tx_vld = #0 1'b1;
+	tx_ref = #0 2'b01;
+	addr_in = #0 $random;
+	data_in = #0 $random;
+	pready = #0 1'b1;
+	prdata = #0 $random;
+
+	#50 $finish;
+end
+
+
+initial
+begin
+	$dumpfile("apb_master.vcd");
+	$dumpvars(0,apb_tb);
+end
+
+endmodule
