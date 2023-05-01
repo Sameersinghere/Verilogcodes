@@ -1,0 +1,11 @@
+module allones(
+  input [7:0] data,
+  output reg [2:0] count
+);
+
+  always @* begin
+    count = {1'b0, data[7], data[6], data[5], data[4], data[3], data[2], data[1], data[0]};
+    count = count + 1'b0;
+  end
+
+endmodule
