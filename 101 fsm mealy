@@ -1,4 +1,4 @@
-// fsm code for sequence 101, mealy
+// fsm code for sequence 101, mealy method
 
 module fsm_101_mealy(in, clk, reset, out);
   input in, clk, reset;
